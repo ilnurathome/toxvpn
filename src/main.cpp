@@ -319,6 +319,18 @@ struct tox_options_deleter {
 
 using tox_options_ptr = std::unique_ptr<Tox_Options, tox_options_deleter>;
 
+void cb_toxcore_logger(Tox *m, TOX_LOG_LEVEL level, const char *file, uint32_t line, const char *func,
+                       const char *message, void *user_data)
+{
+    if (user_data) {
+        FILE *fp = (FILE *)user_data;
+        fprintf(fp, "[%d] %u:%s() - %s\n", level, line, func, message);
+        fflush(fp);
+    } else {
+        fprintf(stderr, "[%d] %u:%s() - %s\n", level, line, func, message);
+    }
+}
+
 int main(int argc, char** argv) {
 #ifdef USE_EPOLL
     epoll_handle = epoll_create(20);
@@ -375,6 +387,10 @@ int main(int argc, char** argv) {
     string changeIp;
     string unixSocket;
     tox_options_ptr opts(tox_options_new(nullptr));
+
+    tox_options_set_log_callback(opts.get(), cb_toxcore_logger);
+    tox_options_set_local_discovery_enabled(opts.get(), true);
+
     opts->start_port = 33445;
     opts->end_port = 33445 + 100;
     struct passwd* target_user = nullptr;
@@ -502,6 +518,8 @@ int main(int argc, char** argv) {
         opts->savedata_data = temp;
         opts->savedata_length = size;
     }
+    
+
 
     want_bootstrap = true;
     my_tox = tox_new(opts.get(), &new_error);
