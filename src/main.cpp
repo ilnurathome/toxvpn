@@ -47,15 +47,21 @@ void saveState(Tox* tox) {
     size_t size = tox_get_savedata_size(tox);
     uint8_t* savedata = new uint8_t[size];
     tox_get_savedata(tox, savedata);
-    int fd = open("savedata", O_TRUNC | O_WRONLY | O_CREAT, 0644);
+    int fd = open("savedata.tmp", O_TRUNC | O_WRONLY | O_CREAT, 0644);
     assert(fd);
 #ifndef NDEBUG
     ssize_t written =
 #endif
         write(fd, savedata, size);
-    assert(written > 0); // FIXME: check even if NDEBUG is disabled
+//    assert(written > 0); // FIXME: check even if NDEBUG is disabled
     close(fd);
     delete[] savedata;
+    if (written >0) {
+        rename("savedata", "savedata.bak");
+        if(rename("savedata.tmp", "savedata")) {
+            cerr << "error while save state" << endl;
+        }
+    }
 }
 
 void do_bootstrap(Tox* tox, ToxVPNCore* toxvpn) {
