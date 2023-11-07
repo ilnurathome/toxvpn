@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
     opts->start_port = 33445;
     opts->end_port = 33445 + 100;
 
-    while((opt = getopt(argc, argv, "shi:l:u:p:a:")) != -1) {
+    while((opt = getopt(argc, argv, "shi:l:b:u:p:a:")) != -1) {
         switch(opt) {
         case 's': stdin_is_socket = true; break;
         case 'h':
