@@ -342,16 +342,66 @@ int main(int argc, char** argv) {
 #endif
     ToxVPNCore toxvpn;
 
-    assert(strlen(BOOTSTRAP_FILE) > 5);
+    int opt;
+    Tox_Err_New new_error;
+    bool stdin_is_socket = false;
+    string changeIp;
+    string unixSocket;
+    string bootstrapFile(BOOTSTRAP_FILE);
+    struct passwd* target_user = nullptr;
+    tox_options_ptr opts(tox_options_new(nullptr));
+
+    tox_options_set_log_callback(opts.get(), cb_toxcore_logger);
+    tox_options_set_local_discovery_enabled(opts.get(), true);
+
+    opts->start_port = 33445;
+    opts->end_port = 33445 + 100;
+
+    while((opt = getopt(argc, argv, "shi:l:u:p:a:")) != -1) {
+        switch(opt) {
+        case 's': stdin_is_socket = true; break;
+        case 'h':
+        case '?':
+            cout << "-s\t\ttreat stdin as a unix socket server" << endl;
+            cout << "-i <IP>\t\tuse this IP on the vpn" << endl;
+            cout << "-l <path>\tlisten on a unix socket at this path" << endl;
+            cout << "-b <path>\tbootstrap file path" << endl;
+            cout << "-u <user>\tswitch to this user once root is no longer "
+                    "required"
+                 << endl;
+            cout << "-p <port>\tbind on a given port" << endl;
+            cout << "-h\t\tprint this help" << endl;
+            return 0;
+        case 'i': changeIp = optarg; break;
+        case 'l': unixSocket = optarg; break;
+        case 'b': bootstrapFile = optarg; break;
+        case 'u':
+#if defined(WIN32) || defined(__CYGWIN__)
+            puts("-u not currently supported on windows");
+#else
+            target_user = getpwnam(optarg);
+            assert(target_user);
+#endif
+            break;
+        case 'p':
+            opts->start_port = opts->end_port =
+                (uint16_t) strtol(optarg, nullptr, 10);
+            break;
+        case 'a': toxvpn.auto_friends.push_back(string(optarg)); break;
+        }
+    }
+    toxvpn.auto_friends.shrink_to_fit();
+    
+    assert(bootstrapFile.size() > 5);
 
     json bootstrapRoot;
 
     try {
-        if (strcmp(BOOTSTRAP_FILE, "") == 0) {
+        if (bootstrapFile.compare("") == 0) {
           cerr << "bootstrap file path is invalid\n";
           return -2;
         }
-        bootstrapRoot = json::parse(readFile(BOOTSTRAP_FILE));
+        bootstrapRoot = json::parse(readFile(bootstrapFile));
         json nodes = bootstrapRoot["nodes"];
         assert(nodes.is_array());
         for(size_t i = 0; i < nodes.size(); i++) {
@@ -381,51 +431,7 @@ int main(int argc, char** argv) {
 
     json configRoot;
 
-    int opt;
-    Tox_Err_New new_error;
-    bool stdin_is_socket = false;
-    string changeIp;
-    string unixSocket;
-    tox_options_ptr opts(tox_options_new(nullptr));
-
-    tox_options_set_log_callback(opts.get(), cb_toxcore_logger);
-    tox_options_set_local_discovery_enabled(opts.get(), true);
-
-    opts->start_port = 33445;
-    opts->end_port = 33445 + 100;
-    struct passwd* target_user = nullptr;
-    while((opt = getopt(argc, argv, "shi:l:u:p:a:")) != -1) {
-        switch(opt) {
-        case 's': stdin_is_socket = true; break;
-        case 'h':
-        case '?':
-            cout << "-s\t\ttreat stdin as a unix socket server" << endl;
-            cout << "-i <IP>\t\tuse this IP on the vpn" << endl;
-            cout << "-l <path>\tlisten on a unix socket at this path" << endl;
-            cout << "-u <user>\tswitch to this user once root is no longer "
-                    "required"
-                 << endl;
-            cout << "-p <port>\tbind on a given port" << endl;
-            cout << "-h\t\tprint this help" << endl;
-            return 0;
-        case 'i': changeIp = optarg; break;
-        case 'l': unixSocket = optarg; break;
-        case 'u':
-#if defined(WIN32) || defined(__CYGWIN__)
-            puts("-u not currently supported on windows");
-#else
-            target_user = getpwnam(optarg);
-            assert(target_user);
-#endif
-            break;
-        case 'p':
-            opts->start_port = opts->end_port =
-                (uint16_t) strtol(optarg, nullptr, 10);
-            break;
-        case 'a': toxvpn.auto_friends.push_back(string(optarg)); break;
-        }
-    }
-    toxvpn.auto_friends.shrink_to_fit();
+    
 
     puts("creating interface");
     mynic = new NetworkInterface();
