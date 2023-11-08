@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
     opts->start_port = 33445;
     opts->end_port = 33445 + 100;
 
-    while((opt = getopt(argc, argv, "shi:l:b:u:p:a:")) != -1) {
+    while((opt = getopt(argc, argv, "shi:l:b:u:p:a:o:e:")) != -1) {
         switch(opt) {
         case 's': stdin_is_socket = true; break;
         case 'h':
@@ -388,6 +388,12 @@ int main(int argc, char** argv) {
                 (uint16_t) strtol(optarg, nullptr, 10);
             break;
         case 'a': toxvpn.auto_friends.push_back(string(optarg)); break;
+        case 'o': 
+            freopen(optarg,"w+",stdout);
+            break;
+        case 'e': 
+            freopen(optarg,"w+",stderr);
+            break;
         }
     }
     toxvpn.auto_friends.shrink_to_fit();
