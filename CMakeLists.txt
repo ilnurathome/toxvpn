@@ -36,7 +36,11 @@ endif(ZMQ)
 
 find_package(nlohmann_json)
 
-find_library(TOXCORE_LIBRARIES toxcore REQUIRED HINTS "${TOX_PREFIX}/lib")
+if(STATIC OR ANDROID)
+    find_library(TOXCORE_LIBRARIES libtoxcore.a REQUIRED HINTS "${TOX_PREFIX}/lib")
+else()
+    find_library(TOXCORE_LIBRARIES toxcore REQUIRED HINTS "${TOX_PREFIX}/lib")
+endif()
 find_path(TOXCORE_INCLUDE_DIRS tox/tox.h REQUIRED HINTS "${TOX_PREFIX}/include")
 
 find_library(SODIUM_LIBRARIES sodium REQUIRED "${SODIUM_PREFIX}/lib")
