@@ -13,8 +13,15 @@ endif(WIN32)
 if(STATIC)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTATIC")
 set(LIBMODE STATIC)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+set(PTHERAD_LIBS "-static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lpthread -Wl,-Bdynamic,--no-whole-archive")
+else()
+set(PTHERAD_LIBS "-lpthread")
 endif(STATIC)
+
+if(ANDROID)
+set(PTHERAD_LIBS "")
+endif(ANDROID)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wshadow -Wextra -std=c++14")
 
 if(SYSTEMD)
@@ -46,7 +53,7 @@ else()
 endif()
 
 add_executable(toxvpn src/main.cpp src/control.cpp src/interface.cpp src/listener.cpp ${extra_files})
-target_link_libraries(toxvpn pthread ${JSONCPP_LIBRARIES} ${TOXCORE_LIBRARIES})
+target_link_libraries(toxvpn ${JSONCPP_LIBRARIES} ${TOXCORE_LIBRARIES} ${PTHERAD_LIBS})
 include_directories(${JSONCPP_INCLUDE_DIRS} ${TOXCORE_INCLUDE_DIRS})
 
 add_executable(toxvpn-remote src/toxvpn-remote.cpp)
