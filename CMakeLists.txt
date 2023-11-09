@@ -38,12 +38,17 @@ find_package(nlohmann_json)
 
 if(STATIC OR ANDROID)
     find_library(TOXCORE_LIBRARIES libtoxcore.a REQUIRED HINTS "${TOX_PREFIX}/lib")
+    find_library(TOXENC_LIBRARIES libtoxencryptsave.a REQUIRED HINTS "${TOX_PREFIX}/lib")
 else()
     find_library(TOXCORE_LIBRARIES toxcore REQUIRED HINTS "${TOX_PREFIX}/lib")
 endif()
 find_path(TOXCORE_INCLUDE_DIRS tox/tox.h REQUIRED HINTS "${TOX_PREFIX}/include")
 
-find_library(SODIUM_LIBRARIES sodium REQUIRED "${SODIUM_PREFIX}/lib")
+if(STATIC OR ANDROID)
+    find_library(SODIUM_LIBRARIES libsodium.a REQUIRED "${SODIUM_PREFIX}/lib")
+else()
+    find_library(SODIUM_LIBRARIES sodium REQUIRED "${SODIUM_PREFIX}/lib")
+endif()
 find_path(SODIUM_INCLUDE_DIRS sodium.h REQUIRED "${SODIUM_PREFIX}/include")
 
 if(WIN32)
@@ -57,7 +62,7 @@ else()
 endif()
 
 add_executable(toxvpn src/main.cpp src/control.cpp src/interface.cpp src/listener.cpp ${extra_files})
-target_link_libraries(toxvpn ${JSONCPP_LIBRARIES} ${TOXCORE_LIBRARIES} ${PTHERAD_LIBS})
+target_link_libraries(toxvpn ${JSONCPP_LIBRARIES} ${TOXCORE_LIBRARIES} ${TOXENC_LIBRARIES} ${PTHERAD_LIBS} ${SODIUM_LIBRARIES})
 include_directories(${JSONCPP_INCLUDE_DIRS} ${TOXCORE_INCLUDE_DIRS})
 
 add_executable(toxvpn-remote src/toxvpn-remote.cpp)
