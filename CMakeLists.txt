@@ -19,7 +19,7 @@ set(PTHERAD_LIBS "-lpthread")
 endif(STATIC)
 
 if(ANDROID)
-set(PTHERAD_LIBS "")
+set(PTHERAD_LIBS "-pthread")
 endif(ANDROID)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wshadow -Wextra -std=c++14")
