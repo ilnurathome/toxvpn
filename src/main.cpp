@@ -49,10 +49,8 @@ void saveState(Tox* tox) {
     tox_get_savedata(tox, savedata);
     int fd = open("savedata.tmp", O_TRUNC | O_WRONLY | O_CREAT, 0644);
     assert(fd);
-#ifndef NDEBUG
-    ssize_t written =
-#endif
-        write(fd, savedata, size);
+
+    ssize_t written = write(fd, savedata, size);
 //    assert(written > 0); // FIXME: check even if NDEBUG is disabled
     close(fd);
     delete[] savedata;
