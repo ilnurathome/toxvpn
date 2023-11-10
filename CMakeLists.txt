@@ -55,7 +55,7 @@ find_path(SODIUM_INCLUDE_DIRS sodium.h REQUIRED "${SODIUM_PREFIX}/include")
 
 
 if(ANDROID)
-    set(GCC_LIBS "-static-libgcc -pie")
+    set(GCC_LIBS "-static-libgcc -pie -lc -ldl")
 else()
 endif()
 
