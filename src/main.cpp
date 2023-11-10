@@ -447,7 +447,7 @@ int main(int argc, char** argv) {
 #else
     if(target_user) {
         puts("setting uid");
-#if !defined(WIN32) && !defined(__APPLE__) && !defined(__CYGWIN__)
+#if !defined(WIN32) && !defined(__APPLE__) && !defined(__CYGWIN__) && !defined(__ANDROID__)  && !defined(ANDROID) 
         cap_value_t cap_values[] = {CAP_NET_ADMIN};
         cap_t caps;
 
@@ -467,7 +467,7 @@ int main(int argc, char** argv) {
             return -2;
         }
 
-#if !defined(WIN32) && !defined(__APPLE__) && !defined(__CYGWIN__)
+#if !defined(WIN32) && !defined(__APPLE__) && !defined(__CYGWIN__) && !defined(__ANDROID__) && !defined(ANDROID) 
         caps = cap_get_proc();
         cap_clear(caps);
         cap_set_flag(caps, CAP_PERMITTED, 1, cap_values, CAP_SET);

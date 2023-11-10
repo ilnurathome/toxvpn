@@ -59,7 +59,11 @@
 #include <linux/if_tun.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#ifndef __ANDROID__
+#ifndef ANDROID
 #include <sys/capability.h>
+#endif
+#endif
 #include <sys/prctl.h>
 #include <asm/types.h>
 #ifdef SYSTEMD
